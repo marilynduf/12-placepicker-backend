@@ -6,12 +6,8 @@ export default function AvailablePlaces({ onSelectPlace }) {
 
     useEffect(() => {
         fetch("http://localhost:3000/places")
-            .then((response) => {
-                return response.json();
-            })
-            .then((resData) => {
-                setAvailablePlaces(resData.places);
-            });
+            .then((response) => response.json())
+            .then((resData) => setAvailablePlaces(resData.places));
     }, []);
 
     return (
