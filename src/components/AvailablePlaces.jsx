@@ -5,15 +5,13 @@ import Error from "./Error.jsx";
 export default function AvailablePlaces({ onSelectPlace }) {
     const [AvailablePlaces, setAvailablePlaces] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState([]);
+    const [error, setError] = useState();
 
     useEffect(() => {
         async function loadPlaces() {
             setIsLoading(true);
             try {
-                const response = await fetch(
-                    "http://localhost:3000/placesssss"
-                );
+                const response = await fetch("http://localhost:3000/places");
                 const resData = await response.json();
 
                 if (!response.ok) {
@@ -27,7 +25,6 @@ export default function AvailablePlaces({ onSelectPlace }) {
                         "Could not fetch places, please try again later",
                 });
             }
-
             setIsLoading(false);
         }
         loadPlaces();
