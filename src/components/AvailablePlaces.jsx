@@ -1,39 +1,33 @@
-import { useSyncExternalStore, useState, useEffect } from "react";
-import Places from "./Places.jsx";
-import Error from "./Error.jsx";
 import { sortPlacesByDistance } from "../loc.js";
 import { fetchAvailablePlaces } from "../http.js";
+import { useFetch } from "../hooks/useFetch.js";
+import Places from "./Places.jsx";
+import Error from "./Error.jsx";
+
+async function getSortedPlaces() {
+    const places = await fetchAvailablePlaces();
+    return new Promise((resolve) => {
+        navigator.geolocation.getCurrentPosition((position) => {
+            const sortedPlaces = sortPlacesByDistance(
+                places,
+                position.coords.latitude,
+                position.coords.longitude
+            );
+            resolve(sortedPlaces);
+        });
+    });
+}
 
 export default function AvailablePlaces({ onSelectPlace }) {
-    const [AvailablePlaces, setAvailablePlaces] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState();
+    const errorMsg = "Could not fetch places, please try again later";
 
-    useEffect(() => {
-        async function loadPlaces() {
-            setIsLoading(true);
+    const {
+        isLoading,
+        error,
+        data: availablePlaces,
+    } = useFetch(getSortedPlaces, errorMsg, []);
 
-            try {
-                const places = await fetchAvailablePlaces();
-                navigator.geolocation.getCurrentPosition((position) => {
-                    const sortedPlaces = sortPlacesByDistance(
-                        places,
-                        position.coords.latitude,
-                        position.coords.longitude
-                    );
-                    setAvailablePlaces(sortedPlaces);
-                });
-            } catch (error) {
-                setError({
-                    message:
-                        error.message ||
-                        "Could not fetch places, please try again later",
-                });
-            }
-            setIsLoading(false);
-        }
-        loadPlaces();
-    }, []);
+    getSortedPlaces();
 
     if (error) {
         return <Error title="An errror occurred" message={error.message} />;
@@ -42,7 +36,7 @@ export default function AvailablePlaces({ onSelectPlace }) {
     return (
         <Places
             title="Available Places"
-            places={AvailablePlaces}
+            places={availablePlaces}
             isLoading={isLoading}
             loadingText="Fetching data..."
             fallbackText="No places available."
